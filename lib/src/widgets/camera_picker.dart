@@ -48,6 +48,7 @@ class CameraPicker extends StatefulWidget {
     this.imageFormatGroup = ImageFormatGroup.unknown,
     this.cameraQuarterTurns = 0,
     this.foregroundBuilder,
+    this.appBarBuilder,
     this.onEntitySaving,
     this.onError,
     CameraPickerTextDelegate? textDelegate,
@@ -121,6 +122,8 @@ class CameraPicker extends StatefulWidget {
   /// 覆盖在相机预览上方的前景构建
   final Widget Function(CameraValue)? foregroundBuilder;
 
+  final Widget? appBarBuilder;
+
   /// {@macro wechat_camera_picker.EntitySaveCallback}
   final EntitySaveCallback? onEntitySaving;
 
@@ -146,6 +149,7 @@ class CameraPicker extends StatefulWidget {
     ResolutionPreset resolutionPreset = ResolutionPreset.max,
     ImageFormatGroup imageFormatGroup = ImageFormatGroup.unknown,
     Widget Function(CameraValue)? foregroundBuilder,
+    Widget? appBarBuilder,
     EntitySaveCallback? onEntitySaving,
     CameraErrorHandler? onError,
     bool useRootNavigator = true,
@@ -174,6 +178,7 @@ class CameraPicker extends StatefulWidget {
           resolutionPreset: resolutionPreset,
           imageFormatGroup: imageFormatGroup,
           foregroundBuilder: foregroundBuilder,
+          appBarBuilder: appBarBuilder,
           onEntitySaving: onEntitySaving,
           onError: onError,
         ),
@@ -940,13 +945,13 @@ class CameraPickerState extends State<CameraPicker>
       height: 118,
       child: Row(
         children: <Widget>[
+          const Spacer(),
+          Expanded(child: Center(child: shootingButton(constraints))),
           Expanded(
             child: controller?.value.isRecordingVideo == true
                 ? const SizedBox.shrink()
-                : Center(child: backButton(context, constraints)),
+                : Center(child: switchCamerasButton),
           ),
-          Expanded(child: Center(child: shootingButton(constraints))),
-          const Spacer(),
         ],
       ),
     );
@@ -968,7 +973,7 @@ class CameraPickerState extends State<CameraPicker>
         ),
         child: const Center(
           child: Icon(
-            Icons.keyboard_arrow_down,
+            Icons.keyboard_arrow_left,
             color: Colors.black,
           ),
         ),
@@ -1341,7 +1346,7 @@ class CameraPickerState extends State<CameraPicker>
         padding: const EdgeInsets.only(bottom: 20.0),
         child: Column(
           children: <Widget>[
-            settingsAction,
+            widget.appBarBuilder ?? settingsAction,
             const Spacer(),
             tipsTextWidget(_controller),
             shootingActions(context, _controller, constraints),

@@ -371,12 +371,19 @@ class _CameraPickerViewerState extends State<CameraPickerViewer> {
       return const SizedBox.shrink();
     }
     return Material(
-      color: Colors.black,
       child: Stack(
         children: <Widget>[
           // Place the specific widget according to the view type.
           if (pickerType == CameraPickerViewType.image)
-            Positioned.fill(child: Image.file(previewFile))
+            Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  alignment: Alignment.center,
+                  image: FileImage(previewFile),
+                  fit: BoxFit.fill,
+                ),
+              ),
+            )
           else if (pickerType == CameraPickerViewType.video)
             Positioned.fill(
               child: Center(
