@@ -49,6 +49,7 @@ class CameraPicker extends StatefulWidget {
     this.cameraQuarterTurns = 0,
     this.foregroundBuilder,
     this.appBarBuilder,
+    this.bottomLeftBuilder,
     this.onEntitySaving,
     this.onError,
     CameraPickerTextDelegate? textDelegate,
@@ -124,6 +125,8 @@ class CameraPicker extends StatefulWidget {
 
   final Widget? appBarBuilder;
 
+  final Widget? bottomLeftBuilder;
+
   /// {@macro wechat_camera_picker.EntitySaveCallback}
   final EntitySaveCallback? onEntitySaving;
 
@@ -150,6 +153,7 @@ class CameraPicker extends StatefulWidget {
     ImageFormatGroup imageFormatGroup = ImageFormatGroup.unknown,
     Widget Function(CameraValue)? foregroundBuilder,
     Widget? appBarBuilder,
+    Widget? bottomLeftBuilder,
     EntitySaveCallback? onEntitySaving,
     CameraErrorHandler? onError,
     bool useRootNavigator = true,
@@ -179,6 +183,7 @@ class CameraPicker extends StatefulWidget {
           imageFormatGroup: imageFormatGroup,
           foregroundBuilder: foregroundBuilder,
           appBarBuilder: appBarBuilder,
+          bottomLeftBuilder: bottomLeftBuilder,
           onEntitySaving: onEntitySaving,
           onError: onError,
         ),
@@ -945,7 +950,11 @@ class CameraPickerState extends State<CameraPicker>
       height: 118,
       child: Row(
         children: <Widget>[
-          const Spacer(),
+          Expanded(
+            child: widget.bottomLeftBuilder != null
+                ? Center(child: widget.bottomLeftBuilder)
+                : const SizedBox.shrink(),
+          ),
           Expanded(child: Center(child: shootingButton(constraints))),
           Expanded(
             child: controller?.value.isRecordingVideo == true
