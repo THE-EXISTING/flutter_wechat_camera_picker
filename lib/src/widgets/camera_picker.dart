@@ -187,7 +187,7 @@ class CameraPicker extends StatefulWidget {
           onEntitySaving: onEntitySaving,
           onError: onError,
         ),
-        transitionCurve: Curves.easeIn,
+        transitionCurve: Curves.easeInOutQuint,
         transitionDuration: _kRouteDuration,
       ),
     );

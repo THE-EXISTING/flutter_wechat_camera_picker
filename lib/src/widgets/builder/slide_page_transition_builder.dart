@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 class SlidePageTransitionBuilder<T> extends PageRoute<T> {
   SlidePageTransitionBuilder({
     required this.builder,
-    this.transitionCurve = Curves.easeIn,
+    this.transitionCurve = Curves.easeInOutQuint,
     this.transitionDuration = const Duration(milliseconds: 500),
   });
 
@@ -53,7 +53,7 @@ class SlidePageTransitionBuilder<T> extends PageRoute<T> {
   ) {
     return SlideTransition(
       position: Tween<Offset>(
-        begin: const Offset(0, 1),
+        begin: const Offset(1, 0),
         end: Offset.zero,
       ).animate(
         CurvedAnimation(curve: transitionCurve, parent: animation),
