@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,8 @@ import '../widgets/circular_progress_bar.dart';
 import 'builder/slide_page_transition_builder.dart';
 import 'camera_picker_viewer.dart';
 import 'exposure_point_widget.dart';
+
+import 'package:path/path.dart' as path;
 
 const Color _lockedColor = Colors.amber;
 const Duration _kRouteDuration = Duration(milliseconds: 300);
@@ -42,6 +45,7 @@ class CameraPicker extends StatefulWidget {
     this.enablePinchToZoom = true,
     this.enablePullToZoomInRecord = true,
     this.shouldDeletePreviewFile = false,
+    this.navigateCameraPickerViewer = false,
     this.maximumRecordingDuration = const Duration(seconds: 15),
     this.theme,
     this.resolutionPreset = ResolutionPreset.max,
@@ -133,6 +137,8 @@ class CameraPicker extends StatefulWidget {
   /// {@macro wechat_camera_picker.CameraErrorHandler}
   final CameraErrorHandler? onError;
 
+  final bool navigateCameraPickerViewer;
+
   /// Static method to create [AssetEntity] through camera.
   /// 通过相机创建 [AssetEntity] 的静态方法
   static Future<AssetEntity?> pickFromCamera(
@@ -157,6 +163,7 @@ class CameraPicker extends StatefulWidget {
     EntitySaveCallback? onEntitySaving,
     CameraErrorHandler? onError,
     bool useRootNavigator = true,
+    bool navigateCameraPickerViewer = false,
   }) {
     if (enableRecording != true && onlyEnableRecording == true) {
       throw ArgumentError('Recording mode error.');
@@ -176,6 +183,7 @@ class CameraPicker extends StatefulWidget {
           enablePullToZoomInRecord: enablePullToZoomInRecord,
           shouldDeletePreviewFile: shouldDeletePreviewFile,
           maximumRecordingDuration: maximumRecordingDuration,
+          navigateCameraPickerViewer: navigateCameraPickerViewer,
           theme: theme,
           cameraQuarterTurns: cameraQuarterTurns,
           textDelegate: textDelegate,
@@ -363,6 +371,8 @@ class CameraPickerState extends State<CameraPicker>
   bool get enablePullToZoomInRecord => widget.enablePullToZoomInRecord;
 
   bool get shouldDeletePreviewFile => widget.shouldDeletePreviewFile;
+
+  bool get navigateCameraPickerViewer => widget.navigateCameraPickerViewer;
 
   Duration? get maximumRecordingDuration => widget.maximumRecordingDuration;
 
@@ -706,6 +716,18 @@ class CameraPickerState extends State<CameraPicker>
     }
   }
 
+  Future<AssetEntity?> createAssetEntity(File previewFile) async {
+    Future<AssetEntity?> saveFuture;
+    AssetEntity? entity;
+    final Uint8List data = await previewFile.readAsBytes();
+    saveFuture = PhotoManager.editor.saveImage(
+      data,
+      title: path.basename(previewFile.path),
+    );
+    entity = await saveFuture;
+    return entity;
+  }
+
   /// The method to take a picture.
   /// 拍照方法
   ///
@@ -728,15 +750,22 @@ class CameraPickerState extends State<CameraPicker>
       Future<void>.delayed(const Duration(milliseconds: 500), () {
         controller.dispose();
       });
-      final AssetEntity? entity = await CameraPickerViewer.pushToViewer(
-        context,
-        pickerState: this,
-        pickerType: CameraPickerViewType.image,
-        previewXFile: _file,
-        theme: theme,
-        shouldDeletePreviewFile: shouldDeletePreviewFile,
-        onEntitySaving: widget.onEntitySaving,
-      );
+      AssetEntity? entity;
+      if (navigateCameraPickerViewer) {
+        entity = await CameraPickerViewer.pushToViewer(
+          context,
+          pickerState: this,
+          pickerType: CameraPickerViewType.image,
+          previewXFile: _file,
+          theme: theme,
+          shouldDeletePreviewFile: shouldDeletePreviewFile,
+          onEntitySaving: widget.onEntitySaving,
+        );
+      } else {
+        final File previewFile = File(_file.path);
+        entity = await createAssetEntity(previewFile);
+      }
+
       if (entity != null) {
         Navigator.of(context).pop(entity);
         return;
