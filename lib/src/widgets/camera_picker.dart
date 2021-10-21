@@ -46,6 +46,7 @@ class CameraPicker extends StatefulWidget {
     this.enablePullToZoomInRecord = true,
     this.shouldDeletePreviewFile = false,
     this.navigateCameraPickerViewer = false,
+    this.defaultFrontCameraIfAvailable = false,
     this.maximumRecordingDuration = const Duration(seconds: 15),
     this.theme,
     this.resolutionPreset = ResolutionPreset.max,
@@ -139,6 +140,8 @@ class CameraPicker extends StatefulWidget {
 
   final bool navigateCameraPickerViewer;
 
+  final bool defaultFrontCameraIfAvailable;
+
   /// Static method to create [AssetEntity] through camera.
   /// 通过相机创建 [AssetEntity] 的静态方法
   static Future<AssetEntity?> pickFromCamera(
@@ -164,6 +167,7 @@ class CameraPicker extends StatefulWidget {
     CameraErrorHandler? onError,
     bool useRootNavigator = true,
     bool navigateCameraPickerViewer = false,
+    bool defaultFrontCameraIfAvailable = false,
   }) {
     if (enableRecording != true && onlyEnableRecording == true) {
       throw ArgumentError('Recording mode error.');
@@ -184,6 +188,7 @@ class CameraPicker extends StatefulWidget {
           shouldDeletePreviewFile: shouldDeletePreviewFile,
           maximumRecordingDuration: maximumRecordingDuration,
           navigateCameraPickerViewer: navigateCameraPickerViewer,
+          defaultFrontCameraIfAvailable: defaultFrontCameraIfAvailable,
           theme: theme,
           cameraQuarterTurns: cameraQuarterTurns,
           textDelegate: textDelegate,
@@ -410,7 +415,7 @@ class CameraPickerState extends State<CameraPicker>
 
     Future<void>.delayed(_kRouteDuration, () {
       if (mounted) {
-        initCameras();
+        initCameras(null, widget.defaultFrontCameraIfAvailable);
       }
     });
   }
@@ -465,7 +470,8 @@ class CameraPickerState extends State<CameraPicker>
 
   /// Initialize cameras instances.
   /// 初始化相机实例
-  void initCameras([CameraDescription? cameraDescription]) {
+  void initCameras(
+      [CameraDescription? cameraDescription, bool? defaultFrontCamera]) {
     // Save the current controller to a local variable.
     final CameraController? _c = _controller;
     // Then unbind the controller from widgets, which requires a build frame.
@@ -491,8 +497,16 @@ class CameraPickerState extends State<CameraPicker>
 
       // When the [cameraDescription] is null, which means this is the first
       // time initializing cameras, so available cameras should be fetched.
+      currentCameraIndex = 0;
       if (cameraDescription == null) {
         cameras = await availableCameras();
+        if (defaultFrontCamera == true) {
+          final int index = cameras.indexWhere((CameraDescription camera) =>
+              camera.lensDirection == CameraLensDirection.front);
+          if (index != -1) {
+            currentCameraIndex = index;
+          }
+        }
       }
 
       // After cameras fetched, judge again with the list is empty or not to
@@ -509,7 +523,7 @@ class CameraPickerState extends State<CameraPicker>
 
       // Initialize the controller with the given resolution preset.
       _controller = CameraController(
-        cameraDescription ?? cameras[0],
+        cameraDescription ?? cameras[currentCameraIndex],
         widget.resolutionPreset,
         enableAudio: enableAudio,
         imageFormatGroup: widget.imageFormatGroup,
