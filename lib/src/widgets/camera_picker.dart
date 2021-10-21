@@ -128,9 +128,9 @@ class CameraPicker extends StatefulWidget {
   /// 覆盖在相机预览上方的前景构建
   final Widget Function(CameraValue)? foregroundBuilder;
 
-  final Widget? appBarBuilder;
+  final WidgetBuilder? appBarBuilder;
 
-  final Widget? bottomLeftBuilder;
+  final WidgetBuilder? bottomLeftBuilder;
 
   /// {@macro wechat_camera_picker.EntitySaveCallback}
   final EntitySaveCallback? onEntitySaving;
@@ -161,8 +161,8 @@ class CameraPicker extends StatefulWidget {
     ResolutionPreset resolutionPreset = ResolutionPreset.max,
     ImageFormatGroup imageFormatGroup = ImageFormatGroup.unknown,
     Widget Function(CameraValue)? foregroundBuilder,
-    Widget? appBarBuilder,
-    Widget? bottomLeftBuilder,
+    WidgetBuilder? appBarBuilder,
+    WidgetBuilder? bottomLeftBuilder,
     EntitySaveCallback? onEntitySaving,
     CameraErrorHandler? onError,
     bool useRootNavigator = true,
@@ -781,7 +781,7 @@ class CameraPickerState extends State<CameraPicker>
       }
 
       if (entity != null) {
-        Navigator.of(context).pop(entity);
+        pop(entity);
         return;
       }
       initCameras(currentCamera);
@@ -877,7 +877,7 @@ class CameraPickerState extends State<CameraPicker>
           shouldDeletePreviewFile: shouldDeletePreviewFile,
         );
         if (entity != null) {
-          Navigator.of(context).pop(entity);
+          pop(entity);
         }
       }).catchError((Object e) {
         realDebugPrint('Error when stop recording video: $e');
@@ -995,7 +995,7 @@ class CameraPickerState extends State<CameraPicker>
         children: <Widget>[
           Expanded(
             child: widget.bottomLeftBuilder != null
-                ? Center(child: widget.bottomLeftBuilder)
+                ? Center(child: widget.bottomLeftBuilder?.call(context))
                 : const SizedBox.shrink(),
           ),
           Expanded(child: Center(child: shootingButton(constraints))),
@@ -1392,13 +1392,13 @@ class CameraPickerState extends State<CameraPicker>
     );
   }
 
-  Widget _contentBuilder(BoxConstraints constraints) {
+  Widget _contentBuilder(BuildContext context, BoxConstraints constraints) {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.only(bottom: 20.0),
         child: Column(
           children: <Widget>[
-            widget.appBarBuilder ?? settingsAction,
+            widget.appBarBuilder?.call(context) ?? settingsAction,
             const Spacer(),
             tipsTextWidget(_controller),
             shootingActions(context, _controller, constraints),
@@ -1440,7 +1440,7 @@ class CameraPickerState extends State<CameraPicker>
                   _initializeWrapper(
                     builder: (_, __) => _focusingAreaWidget(constraints),
                   ),
-                  _contentBuilder(constraints),
+                  _contentBuilder(context, constraints),
                 ],
               ),
             ),
@@ -1449,6 +1449,8 @@ class CameraPickerState extends State<CameraPicker>
       ),
     );
   }
+
+  void pop(AssetEntity? entity) => Navigator.of(context).pop(entity);
 }
 
 enum _PreviewScaleType { none, width, height }
