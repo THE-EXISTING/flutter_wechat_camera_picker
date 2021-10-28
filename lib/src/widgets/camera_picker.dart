@@ -497,8 +497,9 @@ class CameraPickerState extends State<CameraPicker>
 
       // When the [cameraDescription] is null, which means this is the first
       // time initializing cameras, so available cameras should be fetched.
-      currentCameraIndex = 0;
+
       if (cameraDescription == null) {
+        currentCameraIndex = 0;
         cameras = await availableCameras();
         if (defaultFrontCamera == true) {
           final int index = cameras.indexWhere((CameraDescription camera) =>
