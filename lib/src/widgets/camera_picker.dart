@@ -1327,7 +1327,7 @@ class CameraPickerState extends State<CameraPicker>
     // Flip the preview if the user is using a front camera to match the result.
     if (currentCamera.lensDirection == CameraLensDirection.front) {
       _preview = Transform(
-        transform: Matrix4.rotationY(math.pi),
+        transform: Matrix4.rotationY(0),
         alignment: Alignment.center,
         child: _preview,
       );
