@@ -916,7 +916,8 @@ class CameraPickerState extends State<CameraPicker>
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: Row(
             children: <Widget>[
-              if (cameras.length > 1) switchCamerasButton,
+              // if (cameras.length > 1) switchCamerasButton,
+              appBackButton(context),
               const Spacer(),
               switchFlashesButton(v),
             ],
@@ -1030,6 +1031,17 @@ class CameraPickerState extends State<CameraPicker>
             color: Colors.black,
           ),
         ),
+      ),
+    );
+  }
+
+  /// this App back button at settingsAction bar
+  Widget appBackButton(BuildContext context) {
+    return IconButton(
+      onPressed: Navigator.of(context).pop,
+      icon: const Icon(
+        Icons.arrow_back,
+        color: Colors.white,
       ),
     );
   }
